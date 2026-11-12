@@ -143,6 +143,28 @@ button{font-family:inherit;cursor:pointer}
 .mbox p,.mbox li{font-size:12.5px;line-height:1.7;color:var(--dim)}
 .mbox ol,.mbox ul{padding-left:18px}
 .mbox .close{float:right;border:1px solid var(--border);background:#fff;border-radius:8px;height:30px;padding:0 12px;font-size:12px}
+.asearch{display:flex;align-items:center;gap:0;background:#fff;border:1px solid var(--border);border-radius:8px;height:36px;box-shadow:0 1px 2px rgba(16,24,40,.06);width:400px;max-width:100%;overflow:hidden}
+.asearch:focus-within{border-color:var(--blue);box-shadow:0 0 0 3px rgba(27,100,218,.12)}
+.asearch .ic{padding:0 4px 0 12px;color:var(--muted);font-size:12px;font-weight:700;white-space:nowrap}
+.asearch input{flex:1;min-width:0;height:100%;border:0;outline:none;font-family:inherit;font-size:12.5px;padding:0 8px;color:var(--text)}
+.asearch button{height:100%;border:0;background:var(--blue);color:#fff;font-size:12px;font-weight:700;padding:0 14px}
+.asearch button:hover{background:#1557c0}
+.ahint{position:absolute;top:56px;left:14px;z-index:520;background:var(--navy);color:#fff;font-size:11.5px;padding:7px 11px;border-radius:7px;box-shadow:0 4px 12px rgba(0,0,0,.18);display:none;max-width:460px;line-height:1.5}
+.ahint.show{display:block}
+.opin{border-radius:10px;padding:14px 16px;color:#fff}
+.opin .l{font-size:11px;opacity:.8}
+.opin b{display:block;font-size:22px;font-weight:800;margin-top:3px;letter-spacing:-.4px}
+.opin p{font-size:12.5px;line-height:1.6;margin-top:8px;opacity:.95}
+.facts{display:grid;grid-template-columns:108px 1fr;gap:7px 10px;font-size:12px;margin-top:2px}
+.facts dt{color:var(--muted)}.facts dd{color:var(--text);line-height:1.45}
+.facts a{color:var(--blue);cursor:pointer;text-decoration:none;font-weight:700}
+.grp{margin-top:8px}
+.grp .gt{font-size:11.5px;font-weight:700;margin-bottom:5px;display:flex;align-items:center;gap:6px}
+.grp .gt i{width:8px;height:8px;border-radius:2px;display:inline-block}
+.grp ul{list-style:none;display:flex;flex-direction:column;gap:4px}
+.grp li{font-size:12px;color:var(--dim);background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 9px;line-height:1.45}
+.approx{background:#EEF4FE;border:1px solid #CFE0FB;color:#1B4B9A;border-radius:8px;padding:9px 11px;font-size:12px;line-height:1.55;margin-bottom:12px}
+.loading{padding:30px 0;text-align:center;color:var(--muted);font-size:12.5px}
 .mobile-toggle{display:none}
 @media (max-width:860px){
   body{overflow:auto}
@@ -185,9 +207,11 @@ button{font-family:inherit;cursor:pointer}
     <div class="topbar">
       <div class="seg" id="viewseg"><button data-v="dj">대전 전체</button><button data-v="ys" class="on">유성구</button></div>
       <div class="seg" id="baseseg"><button data-b="base" class="on">일반</button><button data-b="sat">위성</button></div>
+      <form class="asearch" id="aform" autocomplete="off"><span class="ic">주소 판정</span><input id="aq" placeholder="예: 봉명동 551-12 / 계룡로 92"><button type="submit">확인</button></form>
       <div class="spacer"></div>
       <button class="chip-btn" id="howto2">보는 법</button>
     </div>
+    <div class="ahint" id="ahint"></div>
     <div class="legend" id="legend">
       <h4>주간보호(노유자) 입지 판정 <span>지구단위계획 기준</span></h4>
       <div class="lg"><i class="sw" style="background:rgba(229,72,77,.55);border:2px solid #E5484D"></i><div><b>불가</b><em>임차 가능한 용지 대부분에서 노유자 불허</em></div></div>
@@ -222,7 +246,13 @@ button{font-family:inherit;cursor:pointer}
     <li>교차검증: 용지별 근거 문장 166개를 분류 모델(TypeSafe Jev)에 따로 판정시켜 144개(87%)가 일치했어요. 어긋난 22개는 원문을 다시 읽어 확인했고, 모두 짧은 인용만 본 분류 모델의 오독이라 원래 판정을 유지했어요.</li>
     <li>구역 경계는 토지이음 이음지도의 지구단위계획구역 도형(2026.10 기준)을 쓰고, 대표 지번 위치와 결정조서상 면적을 대조해 이름을 붙였어요. 연결 방식은 상세 패널 '지도 연결'에 적어 뒀어요.</li>
   </ol>
-  <h3>4. 꼭 알아둘 한계</h3>
+  <h3>4. 주소 판정 기능</h3>
+  <ul>
+    <li>위쪽 검색창에 지번(예: 봉명동 551-12)을 넣으면 토지이음에서 해당 필지를 찾아 지구단위계획구역 포함 여부·용도지역을 확인하고, 이 지도의 구역 판정과 합쳐 의견을 보여줘요. 지도의 아무 곳이나 눌러도 그 자리 필지로 같은 판정을 해요.</li>
+    <li>도로명 주소는 공개 지도(OpenStreetMap)로 대략적인 위치만 찾아요. 표시된 필지가 맞는지 확인하고, 다르면 지도에서 건물을 직접 눌러 주세요. 지번 검색이 가장 정확해요.</li>
+    <li>구역 안 필지가 어느 용지(단독·근생·상업 등)인지는 공개 데이터로 알 수 없어서, '일부 불가' 구역은 허용 용지와 불허 용지를 나눠 보여주고 토지이음 확인 링크를 드려요.</li>
+  </ul>
+  <h3>5. 꼭 알아둘 한계</h3>
   <ul>
     <li>법적 효력이 없는 1차 선별 자료예요. 계약 전에는 해당 필지의 토지이용계획확인서와 유성구청·대전시 담당 부서 확인이 필요해요.</li>
     <li>구역 단위 판정이라 같은 구역이라도 필지(획지)마다 다를 수 있어요. 정확한 판단은 대상 필지의 획지 번호로 지침 표를 다시 봐야 해요.</li>
@@ -273,7 +303,7 @@ D.zones.forEach(z=>{ const v=vOf(z), c=VC[v];
   const lay=L.polygon(toLL(z.g),{pane:'zones',color:c.c,weight:z.plan?1.6:1.2,dashArray:(v==='확인필요')?'5 4':null,fillColor:c.c,fillOpacity:c.fo});
   const nm=z.plan?plans[z.plan].name:unnamed.name;
   lay.bindTooltip(`<b>${esc(nm)}</b><span style="color:${c.c};font-weight:700">${c.lbl}</span> · ${esc(z.plan?plans[z.plan].headline:'대전시 목록과 미연결')}`,{className:'zt',sticky:true,direction:'top',offset:[0,-8]});
-  lay.on('click',()=>openZone(z)); lay.on('mouseover',()=>lay.setStyle({weight:3})); lay.on('mouseout',()=>styleZone(z));
+  lay.on('mouseover',()=>lay.setStyle({weight:3})); lay.on('mouseout',()=>styleZone(z));
   z._lay=lay; z._v=v; zoneLayers.push(z); lay.addTo(zoneGroup);
   if((v==='불가'||v==='일부불가')&&z.plan&&bigZone[z.plan]===z.fid){ const ct=L.tooltip({permanent:true,direction:'right',offset:[10,0],className:'callout'+(v==='일부불가'?' part':''),interactive:false}).setLatLng(z.ip?[z.ip[1],z.ip[0]]:lay.getBounds().getCenter()).setContent(esc(shortName(nm))+' · '+c.lbl); z._ct=ct; }
 });
@@ -300,7 +330,7 @@ document.getElementById('q').oninput=renderList; document.getElementById('sort')
 document.getElementById('mtoggle').onclick=e=>{ const s=document.getElementById('side'); s.classList.toggle('expand'); e.target.textContent=s.classList.contains('expand')?'구역 목록 접기':'구역 목록 펼치기'; };
 // ---------- panel ----------
 const panel=document.getElementById('panel');
-function closePanel(){ panel.classList.remove('open'); const prev=selected; selected=null; if(prev) zoneLayers.forEach(z=>z.fid&&styleZone(z)); history.replaceState(null,'',location.pathname); renderList(); }
+function closePanel(){ reqSeq++; hiLayer.clearLayers(); panel.classList.remove('open'); const prev=selected; selected=null; if(prev) zoneLayers.forEach(z=>z.fid&&styleZone(z)); history.replaceState(null,'',location.pathname); renderList(); }
 function openPlan(id,fromZone){ const zs=planZones[id]||[]; selected={plan:id,fid:fromZone?fromZone.fid:null}; zoneLayers.forEach(z=>z.fid&&styleZone(z));
   if(zs.length){ const b=L.latLngBounds([]); zs.forEach(z=>b.extend(z._lay.getBounds())); if(!fromZone) map.fitBounds(b,{paddingTopLeft:[40,60],paddingBottomRight:[window.innerWidth>860?440:40,40],maxZoom:16}); }
   else { const p=D.pts.find(x=>x.plan===id); if(p&&!fromZone) map.setView([p.pt[1],p.pt[0]],15); }
@@ -329,11 +359,98 @@ document.querySelectorAll('#baseseg button').forEach(b=>b.onclick=()=>{ document
 const modal=document.getElementById('modal'); const openM=e=>{e&&e.preventDefault(); modal.classList.add('open');};
 document.getElementById('howto').onclick=openM; document.getElementById('howto2').onclick=openM; document.getElementById('mclose').onclick=()=>modal.classList.remove('open'); modal.onclick=e=>{ if(e.target===modal) modal.classList.remove('open'); };
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ modal.classList.remove('open'); closePanel(); } });
+// ---------- 주소·필지 판정 ----------
+const EMD={"원내동":"30200101","교촌동":"30200102","대정동":"30200103","용계동":"30200104","학하동":"30200105","계산동":"30200106","성북동":"30200107","세동":"30200108","송정동":"30200109","방동":"30200110","봉명동":"30200111","구암동":"30200112","덕명동":"30200113","원신흥동":"30200114","상대동":"30200115","복용동":"30200116","장대동":"30200117","갑동":"30200118","노은동":"30200119","지족동":"30200120","죽동":"30200121","궁동":"30200122","어은동":"30200123","구성동":"30200124","신성동":"30200125","가정동":"30200126","도룡동":"30200127","장동":"30200128","방현동":"30200129","화암동":"30200130","덕진동":"30200131","하기동":"30200132","추목동":"30200133","자운동":"30200134","신봉동":"30200135","수남동":"30200136","안산동":"30200137","외삼동":"30200138","반석동":"30200139","문지동":"30200140","전민동":"30200141","원촌동":"30200142","탑립동":"30200143","용산동":"30200144","봉산동":"30200145","관평동":"30200146","송강동":"30200147","금고동":"30200148","대동":"30200149","금탄동":"30200150","신동":"30200151","둔곡동":"30200152","구룡동":"30200153"};
+const EMD_R={}; Object.entries(EMD).forEach(([k,v])=>EMD_R[v]=k);
+const MP='https://www.eum.ne.kr:9004/MapPlan/MapPlan?req=search&version=20261014';
+// EPSG:5179 (UTM-K, GRS80) <-> WGS84
+const TM=(function(){ const A=6378137,F=1/298.257222101,E2=2*F-F*F,K0=0.9996,LAT0=38*Math.PI/180,LON0=127.5*Math.PI/180,FE=1e6,FN=2e6,EP2=E2/(1-E2);
+ const M=p=>A*((1-E2/4-3*E2*E2/64-5*E2**3/256)*p-(3*E2/8+3*E2*E2/32+45*E2**3/1024)*Math.sin(2*p)+(15*E2*E2/256+45*E2**3/1024)*Math.sin(4*p)-(35*E2**3/3072)*Math.sin(6*p)); const M0=M(LAT0);
+ return { fwd(lon,lat){ const p=lat*Math.PI/180,l=lon*Math.PI/180,N=A/Math.sqrt(1-E2*Math.sin(p)**2),T=Math.tan(p)**2,C=EP2*Math.cos(p)**2,a=(l-LON0)*Math.cos(p);
+   return [FE+K0*N*(a+(1-T+C)*a**3/6+(5-18*T+T*T+72*C-58*EP2)*a**5/120), FN+K0*(M(p)-M0+N*Math.tan(p)*(a*a/2+(5-T+9*C+4*C*C)*a**4/24+(61-58*T+T*T+600*C-330*EP2)*a**6/720))]; },
+  inv(x,y){ const m=M0+(y-FN)/K0, mu=m/(A*(1-E2/4-3*E2*E2/64-5*E2**3/256)), e1=(1-Math.sqrt(1-E2))/(1+Math.sqrt(1-E2));
+   const p1=mu+(3*e1/2-27*e1**3/32)*Math.sin(2*mu)+(21*e1*e1/16-55*e1**4/32)*Math.sin(4*mu)+(151*e1**3/96)*Math.sin(6*mu)+(1097*e1**4/512)*Math.sin(8*mu);
+   const N1=A/Math.sqrt(1-E2*Math.sin(p1)**2),T1=Math.tan(p1)**2,C1=EP2*Math.cos(p1)**2,R1=A*(1-E2)/(1-E2*Math.sin(p1)**2)**1.5,Dd=(x-FE)/(N1*K0);
+   const lat=p1-(N1*Math.tan(p1)/R1)*(Dd*Dd/2-(5+3*T1+10*C1-4*C1*C1-9*EP2)*Dd**4/24+(61+90*T1+298*C1+45*T1*T1-252*EP2-3*C1*C1)*Dd**6/720);
+   const lon=LON0+(Dd-(1+2*T1+C1)*Dd**3/6+(5-2*C1+28*T1-3*C1*C1+8*EP2+24*T1*T1)*Dd**5/120)/Math.cos(p1); return [lon*180/Math.PI,lat*180/Math.PI]; } }; })();
+async function mp(params){ const ctl=new AbortController(); const t=setTimeout(()=>ctl.abort(),10000); try{ const r=await fetch(MP+'&'+params,{signal:ctl.signal}); const tx=await r.text(); if(!tx.trim().startsWith('{')) return null; return JSON.parse(tx); }catch(e){ return null; } finally{ clearTimeout(t); } }
+const pip=(pt,ring)=>{ let [x,y]=pt,ins=false; for(let i=0,j=ring.length-1;i<ring.length;j=i++){ const [xi,yi]=ring[i],[xj,yj]=ring[j]; if(((yi>y)!=(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi)+xi)) ins=!ins; } return ins; };
+const polysOf=g=>g.type==='Polygon'?[g.coordinates]:g.coordinates;
+const inG=(pt,g)=>polysOf(g).some(p=>pip(pt,p[0])&&!p.slice(1).some(h=>pip(pt,h)));
+function parcelInterior(g){ const ring=polysOf(g)[0][0]; let cx=0,cy=0; ring.forEach(p=>{cx+=p[0];cy+=p[1];}); cx/=ring.length; cy/=ring.length; if(inG([cx,cy],g)) return [cx,cy];
+  let mnx=1e12,mny=1e12,mxx=-1e12,mxy=-1e12; ring.forEach(([x,y])=>{mnx=Math.min(mnx,x);mny=Math.min(mny,y);mxx=Math.max(mxx,x);mxy=Math.max(mxy,y);}); for(let k=1;k<400;k++){ const p=[mnx+(mxx-mnx)*((k*0.618034)%1),mny+(mxy-mny)*((k*0.414214)%1)]; if(inG(p,g)) return p; } return [cx,cy]; }
+const toLatLngs=g=>{ const c=r=>r.map(p=>{ const q=TM.inv(p[0],p[1]); return [q[1],q[0]]; }); return g.type==='Polygon'?g.coordinates.map(c):g.coordinates.map(pp=>pp.map(c)); };
+function pnuLabel(pnu){ const dong=EMD_R[pnu.slice(0,8)]; const bon=+pnu.slice(11,15),bu=+pnu.slice(15,19); return (dong?'유성구 '+dong+' ':'')+(pnu[10]==='2'?'산 ':'')+bon+(bu?'-'+bu:''); }
+function parseJibun(q){ const s=q.replace(/\s+/g,' ').replace(/대전광역시|대전시|대전|유성구/g,' ').trim(); const m=s.match(/([가-힣]+동)\s*(산\s*)?(\d{1,4})(?:\s*-\s*(\d{1,4}))?(?:\s*번지)?(?:\s|$)/); if(!m||!EMD[m[1]]) return null; return EMD[m[1]]+'00'+(m[2]?'2':'1')+String(m[3]).padStart(4,'0')+String(m[4]||0).padStart(4,'0'); }
+const hiPane=map.createPane('hi'); hiPane.style.zIndex=640; hiPane.style.pointerEvents='none';
+const hiLayer=L.layerGroup().addTo(map);
+const hint=document.getElementById('ahint'); let hintT=null;
+function showHint(msg,ms){ hint.textContent=msg; hint.classList.add('show'); clearTimeout(hintT); if(ms) hintT=setTimeout(()=>hint.classList.remove('show'),ms); }
+const OP={ ok:{c:'#12A37F',bg:'#0E7F63'}, part:{c:'#E8890C',bg:'#B86E06'}, no:{c:'#E5484D',bg:'#C93338'}, chk:{c:'#7C8798',bg:'#4A5567'} };
+let reqSeq=0;
+function panelLoading(msg){ selected=null; zoneLayers.forEach(z=>z.fid&&styleZone(z)); document.getElementById('ph').innerHTML='<button class="x" id="px" aria-label="닫기">×</button><span class="tag" style="background:#EEF1F5;color:#4A5567">주소 판정</span><h2>'+esc(msg)+'</h2>'; document.getElementById('px').onclick=closePanel; document.getElementById('pb').innerHTML='<div class="loading">토지이음에서 필지와 용도지역을 확인하고 있어요…</div>'; panel.classList.add('open'); }
+async function lookupPnu(pnu,opts={}){ const my=++reqSeq; panelLoading(pnuLabel(pnu)); const fa=await mp('layer=FA&code='+pnu); if(my!==reqSeq) return; const f=fa&&fa.features&&fa.features[0];
+  if(!f){ renderNotFound('해당 지번을 찾지 못했어요','지번이 없거나(합병·분할로 바뀐 번호 등) 토지이음 서버가 응답하지 않았어요. 번호를 다시 확인하거나 지도에서 직접 눌러 주세요.'); return; }
+  await evaluateParcel(f,{...opts,my,fit:true}); }
+async function lookupPoint(latlng,opts={}){ const my=++reqSeq; const xy=TM.fwd(latlng.lng,latlng.lat); panelLoading('선택한 위치'); const q=`mbr=${xy[0].toFixed(2)},${xy[1].toFixed(2)},${xy[0].toFixed(2)},${xy[1].toFixed(2)}`; const fa=await mp('layer=FA&'+q); if(my!==reqSeq) return; const f=fa&&fa.features&&fa.features[0];
+  if(!f){ hiLayer.clearLayers(); L.circleMarker(latlng,{pane:'hi',radius:6,color:'#fff',weight:2,fillColor:'#14243A',fillOpacity:1}).addTo(hiLayer); renderNotFound('이 위치에서 필지를 찾지 못했어요','도로·하천처럼 지번이 없는 곳이거나 토지이음 서버가 응답하지 않았어요. 건물이 있는 필지를 눌러 주세요.'); return; }
+  await evaluateParcel(f,{...opts,my,clickXY:xy}); }
+function renderNotFound(title,msg){ document.getElementById('ph').innerHTML='<button class="x" id="px" aria-label="닫기">×</button><span class="tag" style="background:#EEF1F5;color:#4A5567">주소 판정</span><h2>'+esc(title)+'</h2>'; document.getElementById('px').onclick=closePanel; document.getElementById('pb').innerHTML='<p style="font-size:12.5px;line-height:1.65;color:var(--dim)">'+esc(msg)+'</p>'; panel.classList.add('open'); }
+function zonesAt(lonlat){ let zs=D.zones.filter(z=>inG(lonlat,z.g)); return zs; }
+function nearestZone(lonlat,maxM){ let best=null,bd=1e9; D.zones.forEach(z=>polysOf(z.g).forEach(p=>p[0].forEach(v=>{ const d=Math.hypot((v[0]-lonlat[0])*89600,(v[1]-lonlat[1])*111000); if(d<bd){bd=d;best=z;} }))); return bd<=maxM?best:null; }
+async function evaluateParcel(f,opts){ const pnu=f.properties.pnu; const jimok=(f.properties.jibun||'').replace(/^[\d-]+/,'').trim(); const ll=toLatLngs(f.geometry); const ptXY=opts.clickXY&&inG(opts.clickXY,f.geometry)?opts.clickXY:parcelInterior(f.geometry);
+  const q=`mbr=${ptXY[0].toFixed(2)},${ptXY[1].toFixed(2)},${ptXY[0].toFixed(2)},${ptXY[1].toFixed(2)}`;
+  const [aa,ac]=await Promise.all([mp('layer=AA&'+q),mp('layer=AC&'+q)]); if(opts.my!==reqSeq) return;
+  const yd=aa?[...new Set(aa.features.map(x=>x.properties.uname).filter(n=>n&&n!=='도시지역'))]:null; const acN=ac?ac.features.map(x=>x.properties.uname):null; const inDup=acN?acN.includes('지구단위계획구역'):null;
+  const lonlat=TM.inv(ptXY[0],ptXY[1]); let zs=zonesAt(lonlat); if(!zs.length&&inDup) { const nz=nearestZone(lonlat,40); if(nz) zs=[nz]; }
+  hiLayer.clearLayers(); const hp=L.polygon(ll,{pane:'hi',color:'#14243A',weight:3,fillColor:'#1B64DA',fillOpacity:.18}).addTo(hiLayer); L.circleMarker([lonlat[1],lonlat[0]],{pane:'hi',radius:5,color:'#fff',weight:2,fillColor:'#1B64DA',fillOpacity:1}).addTo(hiLayer);
+  if(opts.fit){ map.fitBounds(hp.getBounds(),{paddingTopLeft:[40,70],paddingBottomRight:[window.innerWidth>860?440:40,40],maxZoom:18}); }
+  history.replaceState(null,'','#a'+pnu); renderParcel({pnu,jimok,yd,inDup,zs,opts}); }
+function renderParcel(r){ const isYS=r.pnu.startsWith('30200'); const planIds=[...new Set(r.zs.flatMap(z=>[z.plan,...z.subs]).filter(Boolean))]; const main=r.zs.find(z=>z.plan); const P=main?plans[main.plan]:null;
+  let lv,title,msg;
+  const inZone=r.inDup===true||r.zs.length>0;
+  if(!isYS){ lv='chk'; title='검토 범위 밖'; msg='이 지도는 유성구 필지만 판정해요.'+(r.inDup?' 이 필지는 지구단위계획구역 안이에요. 해당 구청 자료로 따로 확인하세요.':''); }
+  else if(!inZone&&r.inDup===false){ lv='ok'; title='진행 가능'; msg='지구단위계획구역 밖이에요. 지구단위계획 때문에 주간보호센터 용도변경이 막히는 일은 없어요. 용도지역상 허용 여부와 건물 조건은 따로 확인하세요.'; }
+  else if(!inZone&&r.inDup===null){ lv='chk'; title='확인 필요'; msg='토지이음 서버가 응답하지 않아 지구단위계획구역 포함 여부를 확인하지 못했어요. 이 지도 기준으로는 구역 밖이에요.'; }
+  else if(P){ const v=P.verdict; const nm=P.name;
+    if(v==='불가'){ lv='no'; title='진행 어려움'; msg=`이 필지는 「${nm}」 안이에요. 이 구역은 임차 가능한 용지 대부분에서 노유자시설을 허용하지 않아 주간보호센터 용도변경이 어려워요.`; }
+    else if(v==='일부불가'){ lv='part'; title='용지 확인 필요'; msg=`이 필지는 「${nm}」 안이에요. 이 구역은 용지에 따라 결과가 갈려요. 이 필지가 아래 '허용 용지'에 속하면 진행 가능, '불허 용지'면 어려워요. 토지이음에서 이 필지의 가구·획지(용지) 번호를 확인하세요.`; }
+    else if(v==='가능'){ lv='ok'; title='진행 가능'; msg=`이 필지는 「${nm}」 안이에요. 이 구역의 지구단위계획에는 노유자시설을 막는 규정이 없고 허용 근거가 있어요.`; }
+    else { lv='chk'; title='확인 필요'; msg=`이 필지는 「${nm}」 안이에요. 공개 문서만으로는 용도 규정을 확정하지 못했어요.`; } }
+  else { lv='chk'; title='확인 필요'; msg='지구단위계획구역 안이지만 대전시 목록(유성구 104개)과 연결되지 않는 구역이에요. 구청 결정 구역이거나 최근 고시일 수 있어 토지이음에서 계획 명칭과 지침을 확인해야 해요.'; }
+  const o=OP[lv]; const zoneTxt=r.inDup===null?(r.zs.length?'안(이 지도 기준)':'확인 불가'):(inZone?'안':'밖');
+  const ydTxt=r.yd==null?'확인 불가(서버 무응답)':(r.yd.join(', ')||'-');
+  const ydWarn=(r.yd||[]).some(n=>/전용주거|일반공업|전용공업|보전녹지|생산녹지|농림|자연환경보전/.test(n));
+  document.getElementById('ph').innerHTML=`<button class="x" id="px" aria-label="닫기">×</button><span class="tag" style="background:${o.c}22;color:${o.bg}">주소 판정 · ${title}</span><span class="kind">${esc(r.jimok?'지목 '+r.jimok:'')}</span><h2>${esc(pnuLabel(r.pnu))}</h2><div class="loc">PNU ${r.pnu}</div>`;
+  document.getElementById('px').onclick=closePanel;
+  let h='';
+  if(r.opts.approx) h+=`<div class="approx">${esc(r.opts.approx)}</div>`;
+  if(/^(도|천|구|제|철|유)$/.test(r.jimok)) h+=`<div class="approx">선택한 곳이 도로·하천 등(지목 '${esc(r.jimok)}') 필지예요. 건물이 있는 필지를 눌러야 정확해요.</div>`;
+  h+=`<div class="opin" style="background:${o.bg}"><div class="l">주간보호센터(노유자시설) 용도변경 · 지구단위계획 기준 의견</div><b>${title}</b><p>${esc(msg)}</p></div>`;
+  h+=`<div class="sec"><h3>확인한 사실</h3><dl class="facts"><dt>지구단위계획구역</dt><dd>${zoneTxt}</dd><dt>해당 계획</dt><dd>${planIds.length?planIds.map(id=>`<a data-id="${id}">${esc(plans[id].name)}</a> <span style="color:${VC[plans[id].verdict].c};font-weight:700">· ${VC[plans[id].verdict].lbl}</span>`).join('<br>'):(inZone?'명칭 미확인':'없음')}</dd><dt>용도지역</dt><dd>${esc(ydTxt)}</dd></dl></div>`;
+  if(ydWarn) h+=`<div class="sec"><div class="caution">용도지역(${esc(r.yd.join(', '))})에 따라 노유자시설이 제한되거나 조례로만 허용될 수 있어요. 지구단위계획과 별개로 대전시 도시계획조례를 확인하세요.</div></div>`;
+  if(P&&P.landuse&&P.landuse.length){ const g=s=>P.landuse.filter(x=>x.status===s); const grp=(lab,col,arr)=>arr.length?`<div class="grp"><div class="gt"><i style="background:${col}"></i>${lab} <span style="color:var(--muted);font-weight:500">${arr.length}</span></div><ul>${arr.map(x=>`<li>${esc(x.zone)}</li>`).join('')}</ul></div>`:'';
+    h+=`<div class="sec"><h3>이 구역의 용지별 결과</h3>${grp('허용 용지','#12A37F',g('허용'))}${grp('조건부 용지','#E8890C',g('조건부'))}${grp('불허 용지','#E5484D',g('불허'))}${grp('미확인','#7C8798',g('미확인'))}<p style="font-size:11px;color:var(--muted);margin-top:8px">근거 문장은 계획 이름을 눌러 구역 상세에서 볼 수 있어요.</p></div>`; }
+  if(P&&P.caveats) h+=`<div class="sec"><h3>주의할 점</h3><div class="caution">${esc(P.caveats)}</div></div>`;
+  h+=`<div class="sec"><h3>다음 확인</h3><div class="files"><a class="primary" href="https://www.eum.go.kr/web/ar/lu/luLandDet.jsp?pnu=${r.pnu}&mode=search&isNoScr=script&selGbn=umd" target="_blank" rel="noopener">토지이음 토지이용계획</a>${P?`<a href="${P.page}" target="_blank" rel="noopener">대전시 계획 원문</a>`:''}</div><p style="font-size:11px;color:var(--muted);margin-top:8px;line-height:1.55">지도 자료 기준 1차 의견이에요. 계약 전에는 토지이용계획확인서·건축물대장과 구청 확인이 필요해요.</p></div>`;
+  document.getElementById('pb').innerHTML=h; document.getElementById('pb').scrollTop=0;
+  document.querySelectorAll('.facts a[data-id]').forEach(a=>a.onclick=()=>openPlan(+a.dataset.id));
+  panel.classList.add('open'); renderList(); }
+map.on('click',e=>{ lookupPoint(e.latlng); });
+async function searchAddress(q){ q=q.trim(); if(!q) return; hint.classList.remove('show'); const pnu=parseJibun(q); if(pnu){ lookupPnu(pnu); return; }
+  if(/동\s*(산\s*)?\d/.test(q)&&!/(로|길)\s*\d/.test(q)){ showHint('유성구 법정동으로 인식하지 못했어요. 예: 봉명동 551-12, 노은동 520',6000); return; }
+  showHint('도로명 주소를 찾고 있어요…');
+  try{ const qq=/대전/.test(q)?q:'대전 '+(/유성구/.test(q)?'':'유성구 ')+q; const r=await fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&countrycodes=kr&addressdetails=1&limit=3&viewbox=127.24,36.51,127.43,36.26&bounded=1&q='+encodeURIComponent(qq)); const j=await r.json();
+    if(!j.length){ showHint('주소를 찾지 못했어요. 지번(예: 봉명동 551-12)으로 검색하거나 지도에서 건물을 눌러 주세요.',7000); return; }
+    const b=j[0]; const exact=!!(b.address&&b.address.house_number); hint.classList.remove('show'); const ll=L.latLng(+b.lat,+b.lon); map.setView(ll,exact?18:16);
+    lookupPoint(ll,{approx: exact?'도로명 주소를 공개 지도(OpenStreetMap)로 찾은 위치예요. 파란색 필지가 맞는지 확인하고, 다르면 지도에서 건물을 직접 눌러 주세요.':'도로명의 건물번호까지는 찾지 못해 도로 근처 위치를 보여드려요. 지도에서 해당 건물을 눌러 필지를 확정하거나, 지번으로 다시 검색해 주세요.'});
+  }catch(e){ showHint('주소 검색 서버에 연결하지 못했어요. 지번으로 검색하거나 지도를 눌러 주세요.',7000); } }
+document.getElementById('aform').onsubmit=e=>{ e.preventDefault(); searchAddress(document.getElementById('aq').value); };
 // ---------- init ----------
 map.fitBounds(ysBounds,{padding:[10,10]}); setTimeout(()=>{ map.invalidateSize(); if(!panel.classList.contains('open')) map.fitBounds(ysBounds,{paddingTopLeft:[10,50],paddingBottomRight:[10,10]}); },300);
 applyFilter();
-const hsh=location.hash; if(/^#p\d+/.test(hsh)) openPlan(+hsh.slice(2)); else if(/^#z\d+/.test(hsh)){ const z=D.zones.find(x=>x.fid===hsh.slice(2)); if(z){ map.fitBounds(z._lay.getBounds(),{maxZoom:16}); openZone(z);} }
-window.__dup={map,openPlan,plans,zones:D.zones};
+const hsh=location.hash; if(/^#a\d{19}$/.test(hsh)) lookupPnu(hsh.slice(2)); else if(/^#p\d+/.test(hsh)) openPlan(+hsh.slice(2)); else if(/^#z\d+/.test(hsh)){ const z=D.zones.find(x=>x.fid===hsh.slice(2)); if(z){ map.fitBounds(z._lay.getBounds(),{maxZoom:16}); openZone(z);} }
+window.__dup={map,openPlan,plans,zones:D.zones,lookupPnu,lookupPoint,searchAddress,TM};
 })();
 </script>
 </body>
