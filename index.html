@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>유성구 지구단위계획 × 주간보호 입지 지도 | 케어링 신규설립</title>
+<meta name="description" content="대전 유성구 지구단위계획구역별 주간보호센터(노유자시설) 용도변경 가능 여부 1차 검토 지도">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{
+  --bg:#F3F6FB; --surface:#FFFFFF; --surface2:#F8FAFC; --border:#E4E7EB; --border2:#D5DBE3;
+  --text:#172338; --muted:#64748B; --dim:#334155;
+  --navy:#14243A; --navy2:#1C3150; --navy-text:#E5EAF0; --navy-dim:#8595A8;
+  --blue:#1B64DA; --blue-soft:#E8F0FD;
+  --no:#E5484D; --no-soft:#FDECEC; --part:#E8890C; --part-soft:#FDF2E2;
+  --ok:#12A37F; --ok-soft:#E3F5EF; --chk:#7C8798; --chk-soft:#EEF1F5;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:"Noto Sans KR","Segoe UI",sans-serif;color:var(--text);background:var(--bg);font-size:13px;-webkit-font-smoothing:antialiased;overflow:hidden}
+button{font-family:inherit;cursor:pointer}
+.app{display:grid;grid-template-columns:330px 1fr;height:100vh;height:100dvh}
+/* ---------- sidebar ---------- */
+.side{background:var(--navy);color:var(--navy-text);display:flex;flex-direction:column;min-height:0}
+.brand{padding:18px 20px 14px;border-bottom:1px solid rgba(255,255,255,.08)}
+.brand .logo{font-weight:800;font-size:19px;letter-spacing:-.5px;color:#fff}
+.brand .logo small{display:block;font-size:11px;font-weight:500;color:var(--navy-dim);letter-spacing:0;margin-top:1px}
+.brand h1{font-size:15px;font-weight:700;margin-top:14px;line-height:1.4;color:#fff}
+.brand p{font-size:11.5px;color:var(--navy-dim);margin-top:4px;line-height:1.5}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:14px 16px 4px}
+.kpi{background:var(--navy2);border-radius:8px;padding:9px 8px 8px;border:1px solid transparent;text-align:left;color:inherit}
+.kpi .l{font-size:10.5px;color:var(--navy-dim);display:flex;align-items:center;gap:5px;white-space:nowrap}
+.kpi .l i{width:8px;height:8px;border-radius:2px;display:inline-block}
+.kpi .n{font-size:20px;font-weight:800;margin-top:3px;font-variant-numeric:tabular-nums;color:#fff}
+.kpi .n small{font-size:10px;font-weight:500;color:var(--navy-dim);margin-left:2px}
+.kpi.off{opacity:.38}
+.kpi:hover{border-color:rgba(255,255,255,.18)}
+.kpinote{font-size:10.5px;color:var(--navy-dim);padding:6px 18px 0}
+.search{padding:12px 16px 8px}
+.search input{width:100%;height:34px;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:#fff;padding:0 12px;font-family:inherit;font-size:12.5px;outline:none}
+.search input::placeholder{color:#7d8ca0}
+.search input:focus{border-color:#4d86e6;background:rgba(255,255,255,.09)}
+.listhead{display:flex;justify-content:space-between;align-items:center;padding:4px 18px 6px;font-size:11px;color:var(--navy-dim)}
+.listhead select{background:transparent;border:0;color:var(--navy-dim);font-family:inherit;font-size:11px;outline:none}
+.listhead select option{color:#000}
+.list{flex:1;overflow:auto;padding:0 10px 12px;min-height:0}
+.list::-webkit-scrollbar{width:8px}.list::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:4px}
+.item{display:grid;grid-template-columns:4px 1fr auto;gap:10px;align-items:center;padding:9px 10px;border-radius:8px;cursor:pointer;margin-bottom:2px}
+.item:hover{background:rgba(255,255,255,.06)}
+.item.sel{background:#1B3A66}
+.item .bar{width:4px;height:30px;border-radius:2px}
+.item .t{font-size:12.5px;font-weight:500;color:#fff;line-height:1.35;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.item .s{font-size:10.5px;color:var(--navy-dim);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .v{font-size:10.5px;font-weight:700;padding:3px 7px;border-radius:5px;white-space:nowrap}
+.sidefoot{padding:10px 18px 14px;border-top:1px solid rgba(255,255,255,.08);font-size:10.5px;color:var(--navy-dim);line-height:1.55}
+.sidefoot a{color:#9fb6d6}
+/* ---------- main ---------- */
+.main{position:relative;min-width:0}
+#map{position:absolute;inset:0;background:#E9EDF2}
+.leaflet-container{font-family:inherit}
+.tiles-gray .leaflet-tile-pane .base{filter:grayscale(1) contrast(.92) brightness(1.04)}
+.topbar{position:absolute;top:14px;left:14px;right:14px;display:flex;gap:8px;align-items:flex-start;pointer-events:none;z-index:500}
+.topbar>*{pointer-events:auto}
+.seg{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:3px;box-shadow:0 1px 2px rgba(16,24,40,.06)}
+.seg button{border:0;background:transparent;height:28px;padding:0 12px;border-radius:6px;font-size:12px;font-weight:500;color:var(--dim)}
+.seg button.on{background:var(--blue-soft);color:var(--blue);font-weight:700}
+.chip-btn{height:36px;border:1px solid var(--border);background:var(--surface);border-radius:8px;padding:0 12px;font-size:12px;font-weight:500;color:var(--dim);box-shadow:0 1px 2px rgba(16,24,40,.06)}
+.chip-btn:hover{border-color:var(--border2)}
+.spacer{flex:1}
+.legend{position:absolute;left:14px;bottom:18px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;z-index:500;box-shadow:0 2px 8px rgba(16,24,40,.08);width:250px}
+.legend h4{font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px;display:flex;flex-direction:column;gap:1px}
+.legend h4 span{font-weight:500;color:var(--muted);font-size:10.5px}
+.lg{display:flex;align-items:flex-start;gap:9px;margin:6px 0;font-size:12px}
+.lg .sw{width:18px;height:12px;border-radius:3px;flex:none;margin-top:3px}
+.lg b{font-weight:700}
+.lg em{display:block;font-style:normal;color:var(--muted);font-size:10.5px;margin-top:1px}
+.legend .note{border-top:1px solid var(--border);margin-top:9px;padding-top:8px;font-size:10.5px;color:var(--muted);line-height:1.5}
+/* detail panel */
+.panel{position:absolute;top:14px;right:14px;bottom:14px;width:400px;background:var(--surface);border:1px solid var(--border);border-radius:12px;z-index:600;box-shadow:0 8px 28px rgba(16,24,40,.14);display:flex;flex-direction:column;transform:translateX(calc(100% + 30px));transition:transform .22s ease;min-height:0}
+.panel.open{transform:none}
+.ph{padding:16px 18px 12px;border-bottom:1px solid var(--border);position:relative}
+.ph .x{position:absolute;right:12px;top:12px;width:30px;height:30px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--muted);font-size:16px;line-height:1}
+.ph .x:hover{background:var(--surface2)}
+.tag{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:3px 8px;border-radius:5px}
+.ph .kind{font-size:11px;color:var(--muted);margin-left:6px}
+.ph h2{font-size:17px;font-weight:800;line-height:1.38;margin-top:9px;padding-right:30px;letter-spacing:-.2px}
+.ph .loc{font-size:12px;color:var(--muted);margin-top:4px}
+.pb{flex:1;overflow:auto;padding:14px 18px 18px;min-height:0}
+.verdict-card{background:var(--navy);color:#fff;border-radius:10px;padding:14px 16px}
+.verdict-card .l{font-size:11px;color:var(--navy-dim)}
+.verdict-card .big{display:flex;align-items:baseline;gap:10px;margin-top:4px}
+.verdict-card .big b{font-size:24px;font-weight:800;letter-spacing:-.5px}
+.verdict-card .big span{font-size:13px;color:#cbd5e1;font-weight:500}
+.verdict-card .hl{font-size:13px;margin-top:8px;line-height:1.5;color:#E5EAF0}
+.sec{margin-top:18px}
+.sec h3{font-size:12.5px;font-weight:700;color:var(--text);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.sec h3 .cnt{font-size:11px;color:var(--muted);font-weight:500}
+.sec p{font-size:12.5px;line-height:1.65;color:var(--dim)}
+.lu{border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.lu .row{display:grid;grid-template-columns:1fr auto;gap:6px 10px;padding:10px 12px;border-top:1px solid var(--border)}
+.lu .row:first-child{border-top:0}
+.lu .z{font-size:12.5px;font-weight:700;color:var(--text);line-height:1.4}
+.lu .q{grid-column:1/-1;font-size:11.5px;color:var(--dim);background:var(--surface2);border-left:3px solid var(--border2);padding:6px 9px;border-radius:0 5px 5px 0;line-height:1.5}
+.lu .w{grid-column:1/-1;font-size:10.5px;color:var(--muted)}
+.st{font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:4px;white-space:nowrap;height:fit-content}
+.kv{display:grid;grid-template-columns:96px 1fr;gap:7px 10px;font-size:12px}
+.kv dt{color:var(--muted)}
+.kv dd{color:var(--text);line-height:1.45}
+.files{display:flex;flex-wrap:wrap;gap:6px}
+.files a{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 11px;border:1px solid var(--border);border-radius:7px;font-size:12px;color:var(--dim);text-decoration:none;background:#fff}
+.files a:hover{border-color:var(--blue);color:var(--blue)}
+.files a.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+.files a small{font-size:10px;color:var(--muted);text-transform:uppercase}
+.files a.primary small{color:#cfe0fb}
+.caution{background:#FFF8EB;border:1px solid #F5DEB3;border-radius:8px;padding:10px 12px;font-size:12px;line-height:1.6;color:#6B4E16}
+.subs a{display:block;font-size:12px;color:var(--blue);padding:3px 0;cursor:pointer;text-decoration:none}
+.subs a:hover{text-decoration:underline}
+.empty{padding:40px 10px;text-align:center;color:var(--muted)}
+/* map labels */
+.gu-label{background:none;border:0;box-shadow:none;font-weight:800;color:#5b6676;font-size:13px;letter-spacing:1px;text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 6px #fff}
+.gu-label.ys{color:var(--navy);font-size:15px}
+.gu-label.dim{color:#8e98a6;font-weight:700;font-size:12px}
+.dong-label{background:none;border:0;box-shadow:none;font-size:11px;color:#5a6577;font-weight:500;text-shadow:0 0 2px #fff,0 0 2px #fff,0 0 4px #fff}
+.leaflet-tooltip.zt{background:#fff;border:1px solid var(--border);border-radius:7px;box-shadow:0 2px 10px rgba(16,24,40,.14);padding:7px 10px;font-family:inherit;color:var(--text);font-size:12px;line-height:1.4;max-width:260px;white-space:normal}
+.leaflet-tooltip.zt:before{display:none}
+.zt b{display:block;font-weight:700}
+.callout{background:#fff!important;border:1px solid var(--border)!important;border-left:4px solid var(--no)!important;border-radius:5px!important;box-shadow:0 1px 4px rgba(16,24,40,.12)!important;padding:4px 8px!important;font-size:11px!important;font-weight:700;color:var(--text)!important;white-space:nowrap}
+.callout.part{border-left-color:var(--part)!important}
+.callout:before{display:none}
+.leaflet-control-zoom{border:1px solid var(--border)!important;border-radius:8px!important;overflow:hidden;box-shadow:0 1px 2px rgba(16,24,40,.06)!important}
+.leaflet-control-zoom a{color:var(--dim)!important}
+.leaflet-bottom.leaflet-right{margin-bottom:6px}
+.leaflet-control-attribution{font-size:10px;background:rgba(255,255,255,.8)!important}
+/* modal */
+.modal{position:fixed;inset:0;background:rgba(15,23,42,.42);z-index:2000;display:none;align-items:center;justify-content:center;padding:20px}
+.modal.open{display:flex}
+.mbox{background:#fff;border-radius:12px;max-width:640px;width:100%;max-height:86vh;overflow:auto;padding:24px 26px;box-shadow:0 20px 50px rgba(0,0,0,.25)}
+.mbox h2{font-size:18px;font-weight:800;margin-bottom:4px}
+.mbox .sub{font-size:12px;color:var(--muted);margin-bottom:16px}
+.mbox h3{font-size:13px;font-weight:700;margin:16px 0 6px}
+.mbox p,.mbox li{font-size:12.5px;line-height:1.7;color:var(--dim)}
+.mbox ol,.mbox ul{padding-left:18px}
+.mbox .close{float:right;border:1px solid var(--border);background:#fff;border-radius:8px;height:30px;padding:0 12px;font-size:12px}
+.mobile-toggle{display:none}
+@media (max-width:860px){
+  body{overflow:auto}
+  .app{grid-template-columns:1fr;grid-template-rows:auto 1fr}
+  .side{max-height:none}
+  .side .list,.side .search,.side .listhead,.sidefoot{display:none}
+  .side.expand .list,.side.expand .search,.side.expand .listhead{display:block}
+  .side.expand .list{max-height:42vh}
+  .brand{padding:12px 16px 8px}.brand h1{margin-top:6px;font-size:14px}.brand p{display:none}
+  .kpis{padding:8px 12px 10px}
+  .kpinote{display:none}
+  .mobile-toggle{display:block;margin:0 12px 10px;height:30px;border-radius:7px;border:1px solid rgba(255,255,255,.15);background:transparent;color:#cbd5e1;font-size:12px}
+  .main{height:72vh}
+  .legend{display:none}
+  .panel{top:auto;left:0;right:0;bottom:0;width:auto;height:70%;border-radius:14px 14px 0 0;transform:translateY(105%)}
+  .topbar{flex-wrap:wrap}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side" id="side">
+    <div class="brand">
+      <div class="logo">케어링<small>신규설립 · 입지 검토</small></div>
+      <h1>유성구 지구단위계획 × 주간보호 입지 지도</h1>
+      <p>대전시 공식 지구단위계획 104개 구역의 시행지침·결정조서를 읽고, 주간보호센터(노유자시설) 용도변경이 막히는 곳을 표시했어요.</p>
+    </div>
+    <div class="kpis" id="kpis"></div>
+    <div class="kpinote">숫자를 누르면 그 판정만 지도에 남겨요.</div>
+    <button class="mobile-toggle" id="mtoggle">구역 목록 펼치기</button>
+    <div class="search"><input id="q" placeholder="구역명 · 동 이름 검색 (예: 도안, 노은, 관평)"></div>
+    <div class="listhead"><span id="listcount"></span>
+      <select id="sort"><option value="v">판정순</option><option value="n">이름순</option><option value="a">면적순</option></select></div>
+    <div class="list" id="list"></div>
+    <div class="sidefoot">기준: 대전시 도시주택정보 지구단위계획 목록·첨부(2026-11-12 수집), 경계는 토지이음 이음지도(2026.10 기준).<br>
+      법적 효력 없는 1차 선별 자료예요. <a href="#" id="howto">보는 법·한계 보기</a></div>
+  </aside>
+  <main class="main">
+    <div id="map"></div>
+    <div class="topbar">
+      <div class="seg" id="viewseg"><button data-v="dj">대전 전체</button><button data-v="ys" class="on">유성구</button></div>
+      <div class="seg" id="baseseg"><button data-b="base" class="on">일반</button><button data-b="sat">위성</button></div>
+      <div class="spacer"></div>
+      <button class="chip-btn" id="howto2">보는 법</button>
+    </div>
+    <div class="legend" id="legend">
+      <h4>주간보호(노유자) 입지 판정 <span>지구단위계획 기준</span></h4>
+      <div class="lg"><i class="sw" style="background:rgba(229,72,77,.55);border:2px solid #E5484D"></i><div><b>불가</b><em>임차 가능한 용지 대부분에서 노유자 불허</em></div></div>
+      <div class="lg"><i class="sw" style="background:rgba(232,137,12,.5);border:2px solid #E8890C"></i><div><b>일부 불가</b><em>용지·블록에 따라 불허 / 허용이 섞임</em></div></div>
+      <div class="lg"><i class="sw" style="background:rgba(18,163,127,.28);border:2px solid #12A37F"></i><div><b>가능</b><em>지구단위계획상 막는 규정 없음</em></div></div>
+      <div class="lg"><i class="sw" style="background:rgba(124,135,152,.25);border:2px dashed #7C8798"></i><div><b>확인 필요</b><em>원문에 용도 규정이 없거나 명칭 미확인</em></div></div>
+      <div class="note">색이 없는 곳은 지구단위계획구역 밖이에요. 구역 밖이라도 용도지역·건축물 조건은 따로 확인해야 해요.</div>
+    </div>
+    <section class="panel" id="panel">
+      <div class="ph" id="ph"></div>
+      <div class="pb" id="pb"></div>
+    </section>
+  </main>
+</div>
+<div class="modal" id="modal"><div class="mbox">
+  <button class="close" id="mclose">닫기</button>
+  <h2>이 지도 보는 법</h2>
+  <div class="sub">대전 유성구 · 지구단위계획구역 × 주간보호센터(노유자시설) 용도변경</div>
+  <h3>1. 무엇을 판정했나</h3>
+  <p>지구단위계획은 용도지역보다 더 세밀하게 건물 용도를 묶어요. 용도지역상 노유자시설이 되는 땅이라도, 지구단위계획 시행지침이나 결정조서가 허용용도를 따로 열거하면서 노유자시설을 빼 두면 주간보호센터로 용도변경할 수 없어요. 이 지도는 그 '지구단위계획 때문에 막히는지'만 구역·용지별로 봤어요.</p>
+  <h3>2. 판정 기준</h3>
+  <ul>
+    <li><b>불가</b> — 근린생활·상업·준주거·업무·단독주택용지 등 임차 가능한 용지 대부분에서 노유자시설이 허용용도에 없거나 불허용도에 들어 있음. '노유자시설 중 아동관련시설만'처럼 노인복지시설을 빼는 경우도 불허로 봤어요.</li>
+    <li><b>일부 불가</b> — 같은 구역 안에서도 용지·블록마다 결과가 다름. 상세 패널의 '용지별 판정'에서 어느 용지가 막히는지 확인하세요.</li>
+    <li><b>가능</b> — 지구단위계획상 노유자를 막는 규정을 찾지 못했고 허용 근거가 있음.</li>
+    <li><b>확인 필요</b> — 공개된 문서가 변경분만 담고 있어 용도 규정이 없거나, 토지이음 경계와 대전시 목록이 연결되지 않은 구역.</li>
+  </ul>
+  <h3>3. 자료와 방법</h3>
+  <ol>
+    <li>대전시 도시주택정보 '지구단위계획 상세정보'에서 유성구 104개 구역과 결정조서·시행지침을 모두 받았어요(HWP는 대전시 문서뷰어로 변환).</li>
+    <li>문서마다 용지별 '건축물의 용도' 조항을 읽어 노유자시설 허용·불허를 표시했어요. 근거 문장은 상세 패널에 그대로 인용했어요.</li>
+    <li>교차검증: 용지별 근거 문장 166개를 분류 모델(TypeSafe Jev)에 따로 판정시켜 144개(87%)가 일치했어요. 어긋난 22개는 원문을 다시 읽어 확인했고, 모두 짧은 인용만 본 분류 모델의 오독이라 원래 판정을 유지했어요.</li>
+    <li>구역 경계는 토지이음 이음지도의 지구단위계획구역 도형(2026.10 기준)을 쓰고, 대표 지번 위치와 결정조서상 면적을 대조해 이름을 붙였어요. 연결 방식은 상세 패널 '지도 연결'에 적어 뒀어요.</li>
+  </ol>
+  <h3>4. 꼭 알아둘 한계</h3>
+  <ul>
+    <li>법적 효력이 없는 1차 선별 자료예요. 계약 전에는 해당 필지의 토지이용계획확인서와 유성구청·대전시 담당 부서 확인이 필요해요.</li>
+    <li>구역 단위 판정이라 같은 구역이라도 필지(획지)마다 다를 수 있어요. 정확한 판단은 대상 필지의 획지 번호로 지침 표를 다시 봐야 해요.</li>
+    <li>지구단위계획과 무관하게 건축물대장 위반, 계단·승강기, 소방, 장애인편의, 주차 등은 별도 검토 대상이에요.</li>
+    <li>목록에 없는 최근 고시나 구청 결정 구역은 빠졌을 수 있어요(회색 점선 '명칭 미확인' 구역 참고).</li>
+  </ul>
+</div></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="data.js"></script>
+<script>
+(function(){
+const D=window.DUP_DATA;
+const VC={ '불가':{c:'#E5484D',soft:'#FDECEC',fo:.5,lbl:'불가'}, '일부불가':{c:'#E8890C',soft:'#FDF2E2',fo:.45,lbl:'일부 불가'}, '가능':{c:'#12A37F',soft:'#E3F5EF',fo:.24,lbl:'가능'}, '확인필요':{c:'#7C8798',soft:'#EEF1F5',fo:.22,lbl:'확인 필요'} };
+const ORDER=['불가','일부불가','확인필요','가능'];
+const STC={ '허용':['#0E7F63','#E3F5EF'], '불허':['#C93338','#FDECEC'], '조건부':['#B86E06','#FDF2E2'], '해당없음':['#64748B','#EEF1F5'], '미확인':['#64748B','#EEF1F5'] };
+const plans={}; D.plans.forEach(p=>plans[p.id]=p);
+const unnamed={verdict:'확인필요',name:'명칭 미확인 지구단위계획구역',headline:'대전시 목록과 연결되지 않은 구역',summary:'토지이음에는 지구단위계획구역으로 표시되지만, 대전시 지구단위계획 목록(유성구 104개)의 위치와 연결되지 않은 경계예요. 구청 결정 구역이거나 최근 고시, 또는 다른 구역의 일부일 수 있어요. 해당 필지를 토지이음에서 직접 조회해 지구단위계획 명칭과 지침을 확인하세요.',landuse:[],caveats:''};
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const ha=a=>a>=10000?(a/10000).toFixed(a>=1e6?0:1)+'ha':Math.round(a).toLocaleString()+'㎡';
+const planZones={}; D.zones.forEach(z=>{ if(z.plan){(planZones[z.plan]=planZones[z.plan]||[]).push(z);} z.subs.forEach(s=>(planZones[s]=planZones[s]||[]).push(z)); });
+const vOf=z=>z.plan?plans[z.plan].verdict:'확인필요';
+const bigZone={}; D.zones.forEach(z=>{ if(z.plan&&(!bigZone[z.plan]||z.area>D.zones.find(q=>q.fid===bigZone[z.plan]).area)) bigZone[z.plan]=z.fid; });
+// ---------- map ----------
+const map=L.map('map',{zoomControl:false,minZoom:9,maxZoom:19,preferCanvas:false});
+L.control.zoom({position:'bottomright'}).addTo(map);
+const att='배경지도 © 국토교통부 VWorld · 경계 © 토지이음';
+const base=L.tileLayer('https://xdworld.vworld.kr/2d/Base/service/{z}/{x}/{y}.png',{maxZoom:19,maxNativeZoom:18,className:'base',attribution:att});
+const sat=L.layerGroup([L.tileLayer('https://xdworld.vworld.kr/2d/Satellite/service/{z}/{x}/{y}.jpeg',{maxZoom:19,maxNativeZoom:18,attribution:att}),L.tileLayer('https://xdworld.vworld.kr/2d/Hybrid/service/{z}/{x}/{y}.png',{maxZoom:19,maxNativeZoom:18})]);
+base.addTo(map); document.getElementById('map').classList.add('tiles-gray');
+map.createPane('mask'); map.getPane('mask').style.zIndex=350;
+map.createPane('zones'); map.getPane('zones').style.zIndex=420;
+map.createPane('gu'); map.getPane('gu').style.zIndex=430; map.getPane('gu').style.pointerEvents='none';
+const toLL=g=>L.GeoJSON.coordsToLatLngs(g.coordinates,g.type==='Polygon'?1:2);
+// gu outlines + dim others
+const guLayer=L.layerGroup().addTo(map); let ysBounds=null, djBounds=L.latLngBounds([]);
+D.gu.forEach(g=>{ const ys=g.name==='유성구'; const poly=L.polygon(toLL(g.g),{pane:ys?'gu':'mask',color:ys?'#14243A':'#6F7B8C',weight:ys?2.6:1.5,dashArray:ys?null:'5 4',fillColor:'#3B4656',fillOpacity:ys?0:.13,interactive:false}).addTo(guLayer);
+  djBounds.extend(poly.getBounds()); if(ys) ysBounds=poly.getBounds();
+  const c=poly.getBounds().getCenter(); const pos=g.name==='유성구'?[36.405,127.300]:c;
+  L.tooltip({permanent:true,direction:'center',className:'gu-label '+(ys?'ys':'dim'),interactive:false}).setLatLng(pos).setContent(ys?'유성구':g.name+' · 검토 제외').addTo(guLayer); });
+// dong
+const dongLayer=L.layerGroup();
+D.dong.forEach(d=>{ const p=L.polygon(toLL(d.g),{pane:'mask',color:'#8C98A8',weight:.8,opacity:.7,fill:false,interactive:false}).addTo(dongLayer);
+  L.tooltip({permanent:true,direction:'center',className:'dong-label',interactive:false}).setLatLng(p.getBounds().getCenter()).setContent(d.name).addTo(dongLayer); });
+// zones
+const zoneLayers=[]; const zoneGroup=L.layerGroup().addTo(map); const calloutGroup=L.layerGroup();
+let active=new Set(ORDER); let selected=null;
+D.zones.forEach(z=>{ const v=vOf(z), c=VC[v];
+  const lay=L.polygon(toLL(z.g),{pane:'zones',color:c.c,weight:z.plan?1.6:1.2,dashArray:(v==='확인필요')?'5 4':null,fillColor:c.c,fillOpacity:c.fo});
+  const nm=z.plan?plans[z.plan].name:unnamed.name;
+  lay.bindTooltip(`<b>${esc(nm)}</b><span style="color:${c.c};font-weight:700">${c.lbl}</span> · ${esc(z.plan?plans[z.plan].headline:'대전시 목록과 미연결')}`,{className:'zt',sticky:true,direction:'top',offset:[0,-8]});
+  lay.on('click',()=>openZone(z)); lay.on('mouseover',()=>lay.setStyle({weight:3})); lay.on('mouseout',()=>styleZone(z));
+  z._lay=lay; z._v=v; zoneLayers.push(z); lay.addTo(zoneGroup);
+  if((v==='불가'||v==='일부불가')&&z.plan&&bigZone[z.plan]===z.fid){ const ct=L.tooltip({permanent:true,direction:'right',offset:[10,0],className:'callout'+(v==='일부불가'?' part':''),interactive:false}).setLatLng(z.ip?[z.ip[1],z.ip[0]]:lay.getBounds().getCenter()).setContent(esc(shortName(nm))+' · '+c.lbl); z._ct=ct; }
+});
+// point-only plans
+D.pts.forEach(p=>{ const pl=plans[p.plan]; const c=VC[pl.verdict]; const m=L.circleMarker([p.pt[1],p.pt[0]],{pane:'zones',radius:7,color:'#fff',weight:2,fillColor:c.c,fillOpacity:1}).bindTooltip(`<b>${esc(pl.name)}</b>${c.lbl} · 경계 도형 없음(대표 지번 위치)`,{className:'zt',direction:'top'}).on('click',()=>openPlan(pl.id)).addTo(zoneGroup); zoneLayers.push({_lay:m,_v:pl.verdict,plan:pl.id,subs:[],pt:true}); });
+function shortName(n){ return n.replace(/\s*지구단위계획(구역)?/g,'').replace(/개발제한구역\s*(집단취락\s*)?(우선)?해제(\(.*?\))?지구/g,'GB해제').replace(/\s*\(.*?\)\s*/g,' ').replace(/\s+/g,' ').trim().slice(0,22); }
+function styleZone(z){ const c=VC[z._v]; const sel=selected&&(selected.fid===z.fid||(selected.plan&&z.plan===selected.plan)); z._lay.setStyle({weight:sel?3.4:(z.plan?1.6:1.2),color:sel?'#14243A':c.c}); }
+function applyFilter(){ zoneLayers.forEach(z=>{ const on=active.has(z._v); if(on&&!zoneGroup.hasLayer(z._lay)) zoneGroup.addLayer(z._lay); if(!on&&zoneGroup.hasLayer(z._lay)) zoneGroup.removeLayer(z._lay); if(z._ct){ const show=on&&map.getZoom()>=13; if(show&&!calloutGroup.hasLayer(z._ct)) calloutGroup.addLayer(z._ct); if(!show&&calloutGroup.hasLayer(z._ct)) calloutGroup.removeLayer(z._ct);} }); renderKpis(); renderList(); }
+calloutGroup.addTo(map);
+map.on('zoomend',()=>{ const zz=map.getZoom(); if(zz>=13){ if(!map.hasLayer(dongLayer)) dongLayer.addTo(map);} else if(map.hasLayer(dongLayer)) map.removeLayer(dongLayer); applyFilter(); });
+// ---------- sidebar ----------
+const counts=()=>{ const c={}; D.plans.forEach(p=>c[p.verdict]=(c[p.verdict]||0)+1); return c; };
+function renderKpis(){ const c=counts(); document.getElementById('kpis').innerHTML=ORDER.map(v=>`<button class="kpi ${active.has(v)?'':'off'}" data-v="${v}"><div class="l"><i style="background:${VC[v].c}"></i>${VC[v].lbl}</div><div class="n">${c[v]||0}<small>곳</small></div></button>`).join('');
+  document.querySelectorAll('.kpi').forEach(b=>b.onclick=()=>{ const v=b.dataset.v; if(active.size===ORDER.length){active=new Set([v]);} else if(active.has(v)){active.delete(v); if(!active.size) active=new Set(ORDER);} else active.add(v); applyFilter(); }); }
+function areaOf(id){ return (planZones[id]||[]).reduce((s,z)=>s+(z.plan===id?z.area:0),0); }
+function renderList(){ const q=document.getElementById('q').value.trim(); const sort=document.getElementById('sort').value;
+  let arr=D.plans.filter(p=>active.has(p.verdict)&&(!q||(p.name+' '+p.loc).includes(q)));
+  if(sort==='v') arr.sort((a,b)=>ORDER.indexOf(a.verdict)-ORDER.indexOf(b.verdict)||(a.gb-b.gb)||areaOf(b.id)-areaOf(a.id));
+  else if(sort==='n') arr.sort((a,b)=>a.name.localeCompare(b.name,'ko')); else arr.sort((a,b)=>areaOf(b.id)-areaOf(a.id));
+  document.getElementById('listcount').textContent=`구역 ${arr.length}곳`;
+  document.getElementById('list').innerHTML=arr.length?arr.map(p=>{ const c=VC[p.verdict]; return `<div class="item ${selected&&selected.plan===p.id?'sel':''}" data-id="${p.id}"><i class="bar" style="background:${c.c}"></i><div><div class="t">${esc(p.name)}</div><div class="s">${esc(p.loc.replace(/^대전광역시\s*/,''))}${areaOf(p.id)?' · '+ha(areaOf(p.id)):''}</div></div><span class="v" style="background:${c.c}22;color:${c.c}">${c.lbl}</span></div>`; }).join(''):'<div class="empty">조건에 맞는 구역이 없어요</div>';
+  document.querySelectorAll('.item').forEach(el=>el.onclick=()=>openPlan(+el.dataset.id)); }
+document.getElementById('q').oninput=renderList; document.getElementById('sort').onchange=renderList;
+document.getElementById('mtoggle').onclick=e=>{ const s=document.getElementById('side'); s.classList.toggle('expand'); e.target.textContent=s.classList.contains('expand')?'구역 목록 접기':'구역 목록 펼치기'; };
+// ---------- panel ----------
+const panel=document.getElementById('panel');
+function closePanel(){ panel.classList.remove('open'); const prev=selected; selected=null; if(prev) zoneLayers.forEach(z=>z.fid&&styleZone(z)); history.replaceState(null,'',location.pathname); renderList(); }
+function openPlan(id,fromZone){ const zs=planZones[id]||[]; selected={plan:id,fid:fromZone?fromZone.fid:null}; zoneLayers.forEach(z=>z.fid&&styleZone(z));
+  if(zs.length){ const b=L.latLngBounds([]); zs.forEach(z=>b.extend(z._lay.getBounds())); if(!fromZone) map.fitBounds(b,{paddingTopLeft:[40,60],paddingBottomRight:[window.innerWidth>860?440:40,40],maxZoom:16}); }
+  else { const p=D.pts.find(x=>x.plan===id); if(p&&!fromZone) map.setView([p.pt[1],p.pt[0]],15); }
+  renderPanel(plans[id],zs,fromZone); history.replaceState(null,'','#p'+id); renderList();
+  const el=document.querySelector(`.item[data-id="${id}"]`); if(el) el.scrollIntoView({block:'nearest'}); }
+function openZone(z){ if(z.plan) return openPlan(z.plan,z); selected={fid:z.fid,plan:null}; zoneLayers.forEach(x=>x.fid&&styleZone(x)); renderPanel(null,[z],z); history.replaceState(null,'','#z'+z.fid); renderList(); }
+function renderPanel(p,zs,z){ const P=p||unnamed; const c=VC[P.verdict];
+  document.getElementById('ph').innerHTML=`<button class="x" id="px" aria-label="닫기">×</button><span class="tag" style="background:${c.soft};color:${c.c}">${c.lbl}</span><span class="kind">${esc(p?(p.gb?'개발제한구역 해제지구':(p.type||'지구단위계획')):'토지이음 경계')}</span><h2>${esc(P.name)}</h2><div class="loc">${esc(p?p.loc:(z.addr+' 일원'))}</div>`;
+  document.getElementById('px').onclick=closePanel;
+  const lu=(P.landuse||[]); const blocked=lu.filter(x=>x.status==='불허').length;
+  let h=`<div class="verdict-card"><div class="l">주간보호센터(노유자시설) 용도변경 · 지구단위계획 기준</div><div class="big"><b>${c.lbl}</b><span>${lu.length?`용지 ${lu.length}개 중 불허 ${blocked}`:''}</span></div><div class="hl">${esc(P.headline)}</div></div>`;
+  if(P.summary) h+=`<div class="sec"><h3>요약</h3><p>${esc(P.summary)}</p></div>`;
+  if(lu.length) h+=`<div class="sec"><h3>용지별 판정 <span class="cnt">${lu.length}개</span></h3><div class="lu">${lu.map(x=>{ const s=STC[x.status]||STC['미확인']; return `<div class="row"><div class="z">${esc(x.zone)}</div><span class="st" style="color:${s[0]};background:${s[1]}">${esc(x.status)}</span>${x.basis?`<div class="q">“${esc(x.basis)}”</div>`:''}${x.where?`<div class="w">${esc(x.where)}</div>`:''}</div>`; }).join('')}</div></div>`;
+  if(P.caveats) h+=`<div class="sec"><h3>주의할 점</h3><div class="caution">${esc(P.caveats)}</div></div>`;
+  if(p){ h+=`<div class="sec"><h3>고시 정보</h3><dl class="kv"><dt>유형</dt><dd>${esc(p.type||'-')}</dd><dt>구역 결정(최종)</dt><dd>${esc(p.zoneLast||'-')}</dd><dt>계획 결정(최종)</dt><dd>${esc(p.planLast||'-')}</dd><dt>문의</dt><dd>${esc(p.tel||'-')}</dd></dl></div>`;
+    h+=`<div class="sec"><h3>원문 자료</h3><div class="files"><a class="primary" href="${p.page}" target="_blank" rel="noopener">대전시 상세 페이지</a>${p.files.map(f=>`<a href="${f.url}" target="_blank" rel="noopener">${esc(f.kind)} <small>${esc(f.ext)}</small></a>`).join('')}</div></div>`; }
+  const zz=zs.length?zs:[]; const subs=[...new Set(zz.flatMap(x=>x.subs).concat(zz.filter(x=>x.plan&&p&&x.plan!==p.id).map(x=>x.plan)))].filter(id=>!p||id!==p.id);
+  h+=`<div class="sec"><h3>지도 연결</h3><dl class="kv">${zz.length?`<dt>경계 면적</dt><dd>${ha(zz.filter(x=>!p||x.plan===p.id||!x.plan).reduce((s,x)=>s+x.area,0)||zz[0].area)} (토지이음 도형 ${zz.length}개)</dd><dt>연결 방식</dt><dd>${esc([...new Set(zz.map(x=>x.conf).filter(Boolean))].join(' / ')||'대표 지번 위치')}</dd><dt>대표 지번</dt><dd>${esc(zz[0].addr||'-')}</dd>`:`<dt>경계</dt><dd>토지이음에 별도 경계가 없어 대표 지번 위치만 점으로 표시</dd>`}</dl>${subs.length?`<div class="sec" style="margin-top:12px"><h3>같은 경계 안의 다른 계획</h3><div class="subs">${subs.map(id=>`<a data-id="${id}">${esc(plans[id].name)} · ${VC[plans[id].verdict].lbl}</a>`).join('')}</div></div>`:''}</div>`;
+  document.getElementById('pb').innerHTML=h; document.getElementById('pb').scrollTop=0;
+  document.querySelectorAll('.subs a').forEach(a=>a.onclick=()=>openPlan(+a.dataset.id));
+  panel.classList.add('open'); }
+// ---------- controls ----------
+document.querySelectorAll('#viewseg button').forEach(b=>b.onclick=()=>{ document.querySelectorAll('#viewseg button').forEach(x=>x.classList.toggle('on',x===b)); fitView(b.dataset.v); });
+function fitView(v){ const right=(panel.classList.contains('open')&&window.innerWidth>860)?420:20; map.fitBounds(v==='dj'?djBounds:ysBounds,{paddingTopLeft:[20,60],paddingBottomRight:[right,20]}); }
+document.querySelectorAll('#baseseg button').forEach(b=>b.onclick=()=>{ document.querySelectorAll('#baseseg button').forEach(x=>x.classList.toggle('on',x===b)); const sat_=b.dataset.b==='sat'; if(sat_){map.removeLayer(base); sat.addTo(map); document.getElementById('map').classList.remove('tiles-gray');} else {map.removeLayer(sat); base.addTo(map); document.getElementById('map').classList.add('tiles-gray');} });
+const modal=document.getElementById('modal'); const openM=e=>{e&&e.preventDefault(); modal.classList.add('open');};
+document.getElementById('howto').onclick=openM; document.getElementById('howto2').onclick=openM; document.getElementById('mclose').onclick=()=>modal.classList.remove('open'); modal.onclick=e=>{ if(e.target===modal) modal.classList.remove('open'); };
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ modal.classList.remove('open'); closePanel(); } });
+// ---------- init ----------
+map.fitBounds(ysBounds,{padding:[10,10]}); setTimeout(()=>{ map.invalidateSize(); if(!panel.classList.contains('open')) map.fitBounds(ysBounds,{paddingTopLeft:[10,50],paddingBottomRight:[10,10]}); },300);
+applyFilter();
+const hsh=location.hash; if(/^#p\d+/.test(hsh)) openPlan(+hsh.slice(2)); else if(/^#z\d+/.test(hsh)){ const z=D.zones.find(x=>x.fid===hsh.slice(2)); if(z){ map.fitBounds(z._lay.getBounds(),{maxZoom:16}); openZone(z);} }
+window.__dup={map,openPlan,plans,zones:D.zones};
+})();
+</script>
+</body>
+</html>
